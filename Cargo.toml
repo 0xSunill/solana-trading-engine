@@ -1,0 +1,3 @@
+[workspace]
+resolver = "3"
+members = ["learning/day01-async-basics"]
