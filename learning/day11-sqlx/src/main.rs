@@ -19,19 +19,14 @@
 //     Ok(())
 // }
 
-
-
-
-
-
 use axum::{
+    Json, Router,
     extract::{Path, State},
     http::StatusCode,
     routing::{get, post},
-    Json, Router,
 };
 use serde::{Deserialize, Serialize};
-use sqlx::{postgres::PgPoolOptions, PgPool};
+use sqlx::{PgPool, postgres::PgPoolOptions};
 use std::env;
 
 #[derive(Clone)]
@@ -74,24 +69,20 @@ async fn create_order(
         || !input.quantity.is_finite()
         || input.quantity <= 0.0
     {
-        return Err((
-            StatusCode::BAD_REQUEST,
-            "Invalid order details".to_string(),
-        ));
+        return Err((StatusCode::BAD_REQUEST, "Invalid order details".to_string()));
     }
 
-    let (id, symbol, side, quantity) =
-        sqlx::query_as::<_, (i64, String, String, f64)>(
-            "INSERT INTO orders (symbol, side, quantity)
+    let (id, symbol, side, quantity) = sqlx::query_as::<_, (i64, String, String, f64)>(
+        "INSERT INTO orders (symbol, side, quantity)
              VALUES ($1, $2, $3)
              RETURNING id, symbol, side, quantity::double precision",
-        )
-        .bind(input.symbol)
-        .bind(input.side)
-        .bind(input.quantity)
-        .fetch_one(&state.pool)
-        .await
-        .map_err(database_error)?;
+    )
+    .bind(input.symbol)
+    .bind(input.side)
+    .bind(input.quantity)
+    .fetch_one(&state.pool)
+    .await
+    .map_err(database_error)?;
 
     Ok((
         StatusCode::CREATED,
@@ -109,37 +100,54 @@ async fn get_order(
     State(state): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Json<Order>, ApiError> {
-    let result =
-        sqlx::query_as::<_, (i64, String, String, f64)>(
-            "SELECT id, symbol, side, quantity::double precision
+    let result = sqlx::query_as::<_, (i64, String, String, f64)>(
+        "SELECT id, symbol, side, quantity::double precision
              FROM orders
              WHERE id = $1",
-        )
-        .bind(id)
-        .fetch_optional(&state.pool)
-        .await
-        .map_err(database_error)?;
+    )
+    .bind(id)
+    .fetch_optional(&state.pool)
+    .await
+    .map_err(database_error)?;
 
     match result {
-        Some((id, symbol, side, quantity)) => {
-            Ok(Json(Order {
-                id,
-                symbol,
-                side,
-                quantity,
-            }))
-        }
-        None => Err((
-            StatusCode::NOT_FOUND,
-            format!("Order {id} not found"),
-        )),
+        Some((id, symbol, side, quantity)) => Ok(Json(Order {
+            id,
+            symbol,
+            side,
+            quantity,
+        })),
+        None => Err((StatusCode::NOT_FOUND, format!("Order {id} not found"))),
     }
+}
+
+async fn list_orders(State(state): State<AppState>) -> Result<Json<Vec<Order>>, ApiError> {
+    let rows = sqlx::query_as::<_, (i64, String, String, f64)>(
+        "SELECT id, symbol, side, quantity::double precision
+             FROM orders
+             ORDER BY id ASC
+             LIMIT 100",
+    )
+    .fetch_all(&state.pool)
+    .await
+    .map_err(database_error)?;
+
+    let orders: Vec<Order> = rows
+        .into_iter()
+        .map(|(id, symbol, side, quantity)| Order {
+            id,
+            symbol,
+            side,
+            quantity,
+        })
+        .collect();
+
+    Ok(Json(orders))
 }
 
 #[tokio::main]
 async fn main() {
-    let database_url = env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     let pool = PgPoolOptions::new()
         .max_connections(5)
@@ -152,7 +160,8 @@ async fn main() {
     let state = AppState { pool };
 
     let app = Router::new()
-        .route("/orders", post(create_order))
+        .route("/", get(|| async { "Hello, World!" }))
+        .route("/orders", get(list_orders).post(create_order))
         .route("/orders/{id}", get(get_order))
         .with_state(state);
 
@@ -162,7 +171,5 @@ async fn main() {
 
     println!("Server running at http://127.0.0.1:3000");
 
-    axum::serve(listener, app)
-        .await
-        .expect("Server failed");
+    axum::serve(listener, app).await.expect("Server failed");
 }
