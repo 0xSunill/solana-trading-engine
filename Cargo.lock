@@ -291,6 +291,8 @@ dependencies = [
 name = "day11-sqlx"
 version = "0.1.0"
 dependencies = [
+ "axum",
+ "serde",
  "sqlx",
  "tokio",
 ]
