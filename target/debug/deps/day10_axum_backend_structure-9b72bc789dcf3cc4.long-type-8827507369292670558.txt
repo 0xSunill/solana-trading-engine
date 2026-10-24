@@ -1,0 +1,2 @@
+fn(State<AppState>, axum::Json<CreateOrderRequest>) -> impl Future<Output = Result<(StatusCode, axum::Json<Order>), (StatusCode, String)>> {create_order}
+fn(State<AppState>, axum::Json<CreateOrderRequest>) -> impl Future<Output = Result<(StatusCode, axum::Json<Order>), (StatusCode, String)>> {create_order}: Handler<_, _>

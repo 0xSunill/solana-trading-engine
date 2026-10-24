@@ -1,0 +1,2 @@
+fn(State<AppState>, axum::extract::Path<u64>) -> impl Future<Output = Result<Json<Order>, (StatusCode, String)>> {get_order}
+fn(State<AppState>, axum::extract::Path<u64>) -> impl Future<Output = Result<Json<Order>, (StatusCode, String)>> {get_order}: Handler<_, _>

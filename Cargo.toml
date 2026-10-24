@@ -1,3 +1,3 @@
 [workspace]
 resolver = "3"
-members = ["learning/day01-async-basics", "learning/day02-async-basics", "learning/day03-channels", "learning/day04-sleep-async", "learning/day05-brodcast", "learning/day05-watch-channel", "learning/day06-Semaphore", "learning/day07-phase2", "learning/day08-trading-backend", "learning/day09-axum-backend"]
+members = ["learning/day01-async-basics", "learning/day02-async-basics", "learning/day03-channels", "learning/day04-sleep-async", "learning/day05-brodcast", "learning/day05-watch-channel", "learning/day06-Semaphore", "learning/day07-phase2", "learning/day08-trading-backend", "learning/day09-axum-backend", "learning/day10-axum-backend", "learning/day10-axum-backend-structure", "learning/day11-sqlx"]
