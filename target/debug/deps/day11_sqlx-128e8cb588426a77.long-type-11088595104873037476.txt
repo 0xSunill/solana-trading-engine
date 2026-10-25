@@ -1,0 +1,1 @@
+std::option::Option<(i64, std::string::String, std::string::String, f64, std::string::String)>
