@@ -1,8 +1,12 @@
-use matching_engine::fifo::match_fifo;
-use matching_engine::maker::Maker;
-use matching_engine::pro_rata::match_pro_rata;
+use day12_matching_simulator::fifo::match_fifo;
+use day12_matching_simulator::maker::Maker;
+use day12_matching_simulator::pro_rata::match_pro_rata;
 
-fn print_result(label: &str, makers: &[Maker], result: &matching_engine::maker::MatchResult) {
+fn print_result(
+    label: &str,
+    makers: &[Maker],
+    result: &day12_matching_simulator::maker::MatchResult,
+) {
     println!("\n{label}");
     println!("Fills:");
 
